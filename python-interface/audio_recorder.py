@@ -19,10 +19,24 @@ class AudioRecorder:
         if self.is_recording:
             return  # Already recording
         self.is_recording = True
+
+        p = pyaudio.PyAudio()
+        info = p.get_host_api_info_by_index(0)
+        numdevices = info.get('deviceCount')
+
+        # set device_id to the mic with "MacBook Pro Microphone" in its name
+        device_id = None
+        for i in range(0, numdevices):
+            if (p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+                if ("MacBook Pro Microphone" in p.get_device_info_by_host_api_device_index(0, i).get('name')):
+                    device_id = i
+                    break
+
+
         self.frames = []
         self.stream = self.audio.open(format=self.format, channels=self.channels,
                                       rate=self.rate, input=True,
-                                      frames_per_buffer=self.chunk)
+                                      frames_per_buffer=self.chunk, input_device_index=device_id)
         self.thread = threading.Thread(target=self._record)
         self.thread.start()
 
