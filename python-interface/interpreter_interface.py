@@ -2,6 +2,7 @@ class InterpreterInterface:
     def __init__(self, interpreter, max_budget=0.01):
         self.interpreter = interpreter
         self.max_budget = max_budget
+        self.interpreter.auto_run = True
         self.conversation_history = []
 
     def send_message(self, message):
