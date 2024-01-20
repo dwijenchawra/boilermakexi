@@ -1,4 +1,7 @@
 import math
+from Gesture_storage.utils import load_config
+
+config = load_config()
 
 
 def init_gesture_from_values(endpoints, score, label, id):
@@ -30,9 +33,11 @@ class Static_gesture():
     def get_rmse(self, g):
         rmse_x = 0.
         rmse_y = 0.
+        weights = config["threshold_weights"]
         for i in range(len(self.points)):
-            rmse_x += (g.points[i]["x"] - self.points[i]["x"]) * (g.points[i]["x"] - self.points[i]["x"])
-            rmse_y += (g.points[i]["y"] - self.points[i]["y"]) * (g.points[i]["y"] - self.points[i]["y"])
-        return sum([rmse_x / len(self.points), rmse_y / len(self.points)]) / 2
+            weight = weights[i]
+            rmse_x += weight * (g.points[i]["x"] - self.points[i]["x"]) * (g.points[i]["x"] - self.points[i]["x"])
+            rmse_y += weight * (g.points[i]["y"] - self.points[i]["y"]) * (g.points[i]["y"] - self.points[i]["y"])
+        return rmse_x / len(self.points) + rmse_y / len(self.points)
 
         # loop over
