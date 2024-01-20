@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import mediapipe as mp
 from Gesture_storage.Static_gesture import *
