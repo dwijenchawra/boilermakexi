@@ -4,6 +4,7 @@ from Gesture_storage.utils import *
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+from Gesture_Detection_Model.utils import *
 import torch.nn as nn
 
 RANDOM_SEED = 42
@@ -27,15 +28,7 @@ valid_loader = DataLoader(list(zip(x_test, y_test)), shuffle=True, batch_size=12
 
 print(next(enumerate(train_loader)))
 
-model = nn.Sequential()
-model.add_module("dense1", nn.Linear(21 * 2, 40))
-model.add_module("act1", nn.ReLU())
-model.add_module("drop1", nn.Dropout(p=0.1))
-model.add_module("dense2", nn.Linear(40, 20))
-model.add_module("act2", nn.ReLU())
-model.add_module("drop2", nn.Dropout(p=0.1))
-model.add_module("output", nn.Linear(20, output_classes))
-model.add_module("output_act", nn.Softmax(dim=1))
+model = load_MLP()
 print(model)
 
 loss_fn = nn.CrossEntropyLoss()
