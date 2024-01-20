@@ -71,13 +71,14 @@ with mp_hands.Hands(
             gesture = init_gesture_from_values(endpoints=points,
                                                score=classification["score"],
                                                label=classification["label"],
+                                               parsed_endpoints=pre_processed_landmark_list,
                                                id="n/a",
                                                )
 
             id = gesture_db.match(gesture)
             inference_id = inference(pre_processed_landmark_list)
             print(id, inference_id)
-            text = id
+            text = f"{id}, {inference_id}"
 
             key = cv2.waitKey(5) & 0xFF
             if key == ord("a"):

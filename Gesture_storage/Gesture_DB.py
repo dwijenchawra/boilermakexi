@@ -33,8 +33,9 @@ class Gesture_DB:
     def match(self, gesture, min_rmse = config["match_threshold"]):
         min_id = 'n/a'
         for g in self.gestures:
-            rmse = g.get_rmse(gesture)
-            # print(rmse)
+            # rmse = g.get_rmse(gesture)
+            rmse = g.get_rmse_v2(gesture)
+            print(rmse)
             if rmse < min_rmse:
                 min_rmse = rmse
                 min_id = g.id

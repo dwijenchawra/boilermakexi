@@ -5,10 +5,11 @@ from Gesture_Detection_Model.inference import *
 config = load_config()
 
 
-def init_gesture_from_values(endpoints, score, label, id):
+def init_gesture_from_values(endpoints, score, label, id, parsed_endpoints):
     d = {"endpoints": endpoints,
          "score": score,
          "id": id,
+         "parsed_datapoints": parsed_endpoints,
          "label": label}
     return Static_gesture(d)
 
@@ -21,6 +22,7 @@ class Static_gesture():
     def __init__(self, d):
         self.points = d["endpoints"]
         self.score = d["score"]
+        self.parsed_endpoints = d["parsed_datapoints"]
         self.label = d["label"]
         self.id = d["id"]
 
@@ -28,8 +30,20 @@ class Static_gesture():
         d = {"id": self.id,
              "score": self.score,
              "label": self.label,
+             "parsed_datapoints": self.parsed_endpoints,
              "endpoints": self.points}
         return d
+
+    def get_rmse_v2(self, g):
+        rmse = 0
+        weights = config["threshold_weights"]
+        for i in range(len(self.points)):
+            weight = weights[i]
+            rmse += weight * (g.parsed_endpoints[2 * i] - self.parsed_endpoints[2 * i]) * (
+                    g.parsed_endpoints[i] - self.parsed_endpoints[i])
+            rmse += weight * (g.parsed_endpoints[2 * i + 1] - self.parsed_endpoints[2 * i + 1]) * (
+                    g.parsed_endpoints[2 * i + 1] - self.parsed_endpoints[2 * i + 1])
+        return rmse / len(self.points)
 
     def get_rmse(self, g):
         rmse_x = 0.
