@@ -65,13 +65,22 @@ def calc_landmark_list(image, landmarks):
 
 class MLP_Inference(object):
     def __init__(self, threads=1, output_classes=config["output_classes"]):
-        self.model = torch.load(config["model_save_path"])
+        path = os.path.join(config["project_path"],config["model_path"])
+        if os.path.exists(path):
+            self.model = torch.load(path)
+
+        else:
+            self.model = None
+            config["output_classes"] = 0
+            update_config(config)
         torch.set_num_threads(int(threads))
 
     def __call__(
             self,
             landmark_list,
     ):
+        if self.model is None:
+            return "n/a"
         inp = torch.tensor(landmark_list, dtype=torch.float32)
         inp = inp.unsqueeze(0)
         out = self.model(inp)

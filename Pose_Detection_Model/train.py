@@ -19,7 +19,7 @@ def train():
 
     y = np.loadtxt(dataset, delimiter=',', dtype='long', usecols=(0))
     if len(x) == 0:
-        return
+        return load_MLP(config["output_classes"])
     print(x.shape)
     print(y.shape)
 

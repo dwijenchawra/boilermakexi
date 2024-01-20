@@ -7,8 +7,9 @@ from Pose_Detection_Model.train import *
 from Gesture_Detection.Detector import *
 
 config = load_config()
-train()
-inference = MLP_Inference(threads=32)
+inference = MLP_Inference(threads=config["threads"])
+# double load because might reset output
+config = load_config()
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
