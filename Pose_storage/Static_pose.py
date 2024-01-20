@@ -5,20 +5,20 @@ from Pose_Detection_Model.inference import *
 config = load_config()
 
 
-def init_gesture_from_values(endpoints, score, label, id, parsed_endpoints):
+def init_pose_from_values(endpoints, score, label, id, parsed_endpoints):
     d = {"endpoints": endpoints,
          "score": score,
          "id": id,
          "parsed_datapoints": parsed_endpoints,
          "label": label}
-    return Static_gesture(d)
+    return Static_pose(d)
 
 
 def get_dist(p1, p2):
     return math.sqrt((p1["x"] - p2["x"]) * (p1["x"] - p2["x"]) + (p1["y"] - p2["y"]) * (p1["y"] - p2["y"]))
 
 
-class Static_gesture():
+class Static_pose():
     def __init__(self, d):
         self.points = d["endpoints"]
         self.score = d["score"]

@@ -1,6 +1,6 @@
 import cv2
 import mediapipe as mp
-from Pose_storage.Gesture_DB import *
+from Pose_storage.Pose_DB import *
 from google.protobuf.json_format import MessageToDict
 from Pose_Detection_Model.inference import *
 from Pose_Detection_Model.train import *
@@ -13,7 +13,7 @@ mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
-gesture_db = Gesture_DB(config["db_path"])
+pose_db = Pose_DB(config["db_path"])
 
 def get_keypoints_from_hand(hand):
     keypoint_pos = []
@@ -68,14 +68,14 @@ with mp_hands.Hands(
             landmark_list = calc_landmark_list(image, results.multi_hand_landmarks[-1])
 
             pre_processed_landmark_list = pre_process_landmark(landmark_list)
-            gesture = init_gesture_from_values(endpoints=points,
-                                               score=classification["score"],
-                                               label=classification["label"],
-                                               parsed_endpoints=pre_processed_landmark_list,
-                                               id="n/a",
-                                               )
+            pose = init_pose_from_values(endpoints=points,
+                                         score=classification["score"],
+                                         label=classification["label"],
+                                         parsed_endpoints=pre_processed_landmark_list,
+                                         id="n/a",
+                                         )
 
-            id = gesture_db.match(gesture)
+            id = pose_db.match(pose)
             inference_id = inference(pre_processed_landmark_list)
             print(id, inference_id)
             text = f"{id}, {inference_id}"
@@ -85,7 +85,7 @@ with mp_hands.Hands(
                 if id == 'n/a':
                     # succeed in being different enough
                     # need to appent datapoints to a tmp dataset
-                    row = [len(gesture_db.gestures)]
+                    row = [len(pose_db.poses)]
                     row.extend(pre_processed_landmark_list)
                     tmp_dataset.append(row)
             else:
@@ -96,7 +96,7 @@ with mp_hands.Hands(
             # check if enough of dataset is created:
             if len(tmp_dataset) > config["sample_count"]:
                 # can extend the csv file and retain the model
-                gesture_db.add_static_gesture(gesture)
+                pose_db.add_static_pose(pose)
                 add_to_csv(tmp_dataset, config["dataset_path"])
                 tmp_dataset = []
                 # now need to train
