@@ -13,6 +13,7 @@ mp_hands = mp.solutions.hands
 
 gesture_db = Gesture_DB(config["db_path"])
 
+
 def get_keypoints_from_hand(hand):
     keypoint_pos = []
     for i in hand["landmark"]:
@@ -56,10 +57,14 @@ with mp_hands.Hands(
 
             classification = MessageToDict(results.multi_handedness[-1])["classification"][-1]
             points = get_keypoints_from_hand(hand)
-            hand = init_gesture_from_values(endpoints=points,
-                                            score=classification["score"],
-                                            label=classification["label"],
-                                            )
+            gesture = init_gesture_from_values(endpoints=points,
+                                               score=classification["score"],
+                                               label=classification["label"],
+                                               id="n/a",
+                                               )
+            id = gesture_db.match(gesture)
+            print(id)
+
 
             for hand_landmarks in results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(

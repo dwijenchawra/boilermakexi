@@ -1,9 +1,10 @@
 import math
 
 
-def init_gesture_from_values(endpoints, score, label):
+def init_gesture_from_values(endpoints, score, label, id):
     d = {"endpoints": endpoints,
          "score": score,
+         "id": id,
          "label": label}
     return Static_gesture(d)
 
@@ -17,11 +18,13 @@ class Static_gesture():
         self.points = d["endpoints"]
         self.score = d["score"]
         self.label = d["label"]
+        self.id = d["id"]
 
     def get_json_data(self):
-        d = {"endpoints": self.points,
+        d = {"id": self.id,
              "score": self.score,
-             "label": self.label}
+             "label": self.label,
+             "endpoints": self.points}
         return d
 
     def get_rmse(self, g):

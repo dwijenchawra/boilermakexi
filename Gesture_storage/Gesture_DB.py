@@ -19,3 +19,13 @@ class Gesture_DB:
     def save_gesture_to_json(self):
         gestures = {"gestures": [gesture.get_json_data() for gesture in self.gestures]}
         save_dict_as_json(gestures, self.db_path)
+
+    def match(self, gesture):
+        min_rmse = config["match_threshold"]
+        min_id = 'n/a'
+        for g in self.gestures:
+            rmse = g.get_rmse(gesture)
+            if rmse < min_rmse:
+                min_rmse = rmse
+                min_id = g.id
+        return min_id

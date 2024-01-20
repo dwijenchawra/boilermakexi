@@ -1,2 +1,3 @@
 project_path: "/Users/alexiy/Projects/boilermakexi"
 db_path: "data/db.json"
+match_threshold: 0.5
