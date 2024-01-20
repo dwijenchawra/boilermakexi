@@ -17,7 +17,7 @@ class Pose_DB:
         self.db_path = db_path
 
     def save_pose_to_json(self):
-        pose = {"pose": [gesture.get_json_data() for gesture in self.poses]}
+        pose = {"pose": [p.get_json_data() for p in self.poses]}
         save_dict_as_json(pose, self.db_path)
 
     def add_static_pose(self, static_pose):
@@ -30,11 +30,11 @@ class Pose_DB:
         else:
             return False
 
-    def match(self, gesture, min_rmse=config["match_threshold"]):
+    def match(self, pose, min_rmse=config["match_threshold"]):
         min_id = 'n/a'
         for g in self.poses:
-            # rmse = g.get_rmse(gesture)
-            rmse = g.get_rmse_v2(gesture)
+            # rmse = g.get_rmse(pose)
+            rmse = g.get_rmse_v2(pose)
             print(rmse)
             if rmse < min_rmse:
                 min_rmse = rmse
