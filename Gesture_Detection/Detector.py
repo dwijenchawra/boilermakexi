@@ -68,6 +68,14 @@ class Detector:
 
         return s > 0.0
 
+    def polygonArea(self):
+        area = 0.
+        for i in range(len(self.q)):
+            j = (i + 1) % len(self.q)
+            area += self.q[i]["x"] * self.q[j]["y"]
+            area -= self.q[j]["x"] * self.q[i]["y"]
+        return area
+
     def update_state(self, point, camera_height, camera_width):
         self.rotation = Rotation.N_A
         self.idle = False
@@ -81,11 +89,11 @@ class Detector:
             return
 
         z_delta = self.q[-1]["z"] - self.q[0]["z"]
+        print(z_delta)
         if z_delta < - config["zoom_thresh"]:
             self.depth = ZDirection.INTO_SCREEN
         elif z_delta > config["zoom_thresh"]:
             self.depth = ZDirection.OUT_OF_SCREEN
-
 
         # first determine general shape through points
         x_val = []
@@ -98,6 +106,12 @@ class Detector:
         d_x = max_x - min_x
         d_y = max_y - min_y
 
+        # first see if even to consider motion
+        min_side_length = get_min_side_length(d_x, d_y, camera_width, camera_height)
+        if min_side_length > config["min_side_len_ratio"]:
+            # is in idle state
+            self.idle = True
+            return
         # look at rectangle
         if d_y / max(d_x, 0.1) >= config["linear_bound"]:
             if self.q[0]["y"] < self.q[-1]["y"]:
@@ -113,11 +127,12 @@ class Detector:
                 self.translation = Translation.RIGHT
         else:
             # is in circular shape
-            if get_min_side_length(d_x, d_y, camera_width, camera_height) > config["min_side_len_ratio"]:
+            print("min LEN: ", min_side_length)
+            if min_side_length > config["min_side_len_ratio"]:
                 # is in idle state
                 self.idle = True
             else:
-                if self.is_clockwise():
+                if self.polygonArea() > 0:
                     self.rotation = Rotation.CCW
                 else:
                     self.rotation = Rotation.CW

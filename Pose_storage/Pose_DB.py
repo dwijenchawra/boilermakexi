@@ -35,7 +35,7 @@ class Pose_DB:
         for g in self.poses:
             # rmse = g.get_rmse(pose)
             rmse = g.get_rmse_v2(pose)
-            print(rmse)
+            # print(rmse)
             if rmse < min_rmse:
                 min_rmse = rmse
                 min_id = g.id

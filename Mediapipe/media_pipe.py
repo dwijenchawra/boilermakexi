@@ -81,7 +81,7 @@ with mp_hands.Hands(
 
             id = pose_db.match(pose)
             inference_id = inference(pre_processed_landmark_list)
-            print(id, inference_id)
+            # print(id, inference_id)
             text = f"{id}, {inference_id}"
 
             key = cv2.waitKey(5) & 0xFF
