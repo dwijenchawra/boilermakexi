@@ -4,7 +4,8 @@ from Gesture_storage.Hand import Hand
 from google.protobuf.json_format import MessageToDict
 from Gesture_storage.utils import *
 
-config = yaml.safe_load("../config.yaml")
+config = load_config()
+
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
