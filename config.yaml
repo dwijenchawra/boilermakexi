@@ -4,10 +4,12 @@ dataset_path: data/blank.csv
 db_path: data/new_db.json
 epochs: 500
 inference_threads: 32
+linear_bound: 4
 match_threshold: 0.1
+min_side_len_ratio: 50
 min_train_steps: 100
 model_save_path: data/model.pickle
-output_classes: 18
+output_classes: 23
 project_path: /Users/alexiy/Projects/boilermakexi
 sample_count: 10
 threshold_weights:
@@ -32,3 +34,5 @@ threshold_weights:
 - 2.9
 - 4.1
 - 10
+time_delta: 10
+zoom_thresh: 0.05

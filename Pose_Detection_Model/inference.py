@@ -37,6 +37,18 @@ def pre_process_landmark(landmark_list):
     return tmp
 
 
+def calc_pointer(image, hand):
+    image_width, image_height = image.shape[1], image.shape[0]
+
+    landmark_point = []
+
+    x = min(int(hand["x"] * image_width), image_width - 1)
+    y = min(int(hand["y"] * image_height), image_height - 1)
+    z = hand["z"]
+
+    return {"x": x, "y": y, "z": z}
+
+
 def calc_landmark_list(image, landmarks):
     image_width, image_height = image.shape[1], image.shape[0]
 

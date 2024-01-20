@@ -17,7 +17,7 @@ class Pose_DB:
         self.db_path = db_path
 
     def save_pose_to_json(self):
-        pose = {"pose": [p.get_json_data() for p in self.poses]}
+        pose = {"poses": [p.get_json_data() for p in self.poses]}
         save_dict_as_json(pose, self.db_path)
 
     def add_static_pose(self, static_pose):

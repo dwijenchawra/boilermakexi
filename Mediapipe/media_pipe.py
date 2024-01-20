@@ -4,6 +4,7 @@ from Pose_storage.Pose_DB import *
 from google.protobuf.json_format import MessageToDict
 from Pose_Detection_Model.inference import *
 from Pose_Detection_Model.train import *
+from Gesture_Detection.Detector import *
 
 config = load_config()
 train()
@@ -14,6 +15,8 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
 pose_db = Pose_DB(config["db_path"])
+detector = Detector(time_delta=config["time_delta"])
+
 
 def get_keypoints_from_hand(hand):
     keypoint_pos = []
@@ -57,7 +60,7 @@ with mp_hands.Hands(
         image.flags.writeable = True
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         # key logic for adding an action
-
+        point = None
         text = "no hands detected!"
         if results.multi_hand_landmarks:
             hand = MessageToDict(results.multi_hand_landmarks[-1])
@@ -66,6 +69,7 @@ with mp_hands.Hands(
             points = get_keypoints_from_hand(hand)
             inference_pts = [[pt["x"], pt["y"]] for pt in points]
             landmark_list = calc_landmark_list(image, results.multi_hand_landmarks[-1])
+            point = calc_pointer(image, hand["landmark"][8])
 
             pre_processed_landmark_list = pre_process_landmark(landmark_list)
             pose = init_pose_from_values(endpoints=points,
@@ -105,6 +109,10 @@ with mp_hands.Hands(
                 train()
 
                 inference = MLP_Inference(threads=config["inference_threads"])
+            image_width, image_height = image.shape[1], image.shape[0]
+            detector.update_state(point, image_width, image_height)
+            print(detector.get_state())
+            text = f"{text}, {detector.get_state()}"
 
             for hand_landmarks in results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(

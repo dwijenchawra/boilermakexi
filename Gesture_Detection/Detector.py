@@ -26,20 +26,36 @@ class Translation(Enum):
 
 config = load_config()
 
+
+def get_min_side_length(x_len, y_len, camera_width, camera_height):
+    return min(camera_width / x_len, camera_height / y_len)
+
+
 class Detector:
-    def __init__(self, time_delta, camera_width, camera_height):
+    def __init__(self, time_delta):
         self.q = deque(maxlen=time_delta)
         self.rotation = Rotation.N_A
         self.translation = Translation.N_A
         self.depth = ZDirection.N_A
         self.idle = False
         self.time_delta = time_delta
-        self.camera_width = camera_width
-        self.camera_height = camera_height
         # plot a rectangle for the points
 
-    def get_min_side_length(self, x_len, y_len):
-        return min(x_len / self.camera_width, y_len / self.camera_height)
+    def get_state(self):
+        depth_state = self.depth.name
+        if self.rotation != Rotation.N_A:
+            return self.rotation.name, depth_state
+
+        if self.translation != Translation.N_A:
+            return self.translation.name, depth_state
+
+        if self.rotation != Rotation.N_A:
+            return self.translation.name, depth_state
+
+        if self.idle:
+            return "idle", self.depth.name
+
+        return "n/a"
 
     def is_clockwise(self):
         # points is your list (or array) of 2d points.
@@ -52,17 +68,25 @@ class Detector:
 
         return s > 0.0
 
-    def update_state(self, point):
+    def update_state(self, point, camera_height, camera_width):
         self.rotation = Rotation.N_A
         self.idle = False
         self.translation = Translation.N_A
         self.depth = ZDirection.N_A
+        if point is None:
+            self.q.popleft()
+            return
         self.q.append(point)
         if len(self.q) < self.time_delta:
             return
 
-        # first determin general shape through points
-        # coordinates wrt to the screen
+        z_delta = self.q[-1]["z"] - self.q[0]["z"]
+        if z_delta > config["zoom_thresh"]:
+            self.depth = ZDirection.OUT_OF_SCREEN
+        elif z_delta > config["zoom_thresh"]:
+            self.depth = ZDirection.INTO_SCREEN
+
+        # first determine general shape through points
         x_val = []
         y_val = []
         for p in self.q:
@@ -74,31 +98,25 @@ class Detector:
         d_y = max_y - min_y
 
         # look at rectangle
-        if d_y / d_x >= config["linear_bound"]:
+        if d_y / max(d_x, 0.1) >= config["linear_bound"]:
             if self.q[0]["y"] < self.q[-1]["y"]:
                 # moving up
-                self.translation = Translation.UP
-            else:
                 self.translation = Translation.DOWN
-        elif d_x / d_y >= config["linear_bound"]:
+            else:
+                self.translation = Translation.UP
+        elif d_x / max(d_y, 0.1) >= config["linear_bound"]:
             if self.q[0]["x"] < self.q[-1]["x"]:
                 # moving right
-                self.translation = Translation.RIGHT
-            else:
                 self.translation = Translation.LEFT
+            else:
+                self.translation = Translation.RIGHT
         else:
             # is in circular shape
-            if self.get_min_side_length(d_x, d_y) < config["min_side_len"]:
-        # is in idle state
+            if get_min_side_length(d_x, d_y, camera_width, camera_height) > config["min_side_len_ratio"]:
+                # is in idle state
                 self.idle = True
             else:
                 if self.is_clockwise():
                     self.rotation = Rotation.CW
                 else:
                     self.rotation = Rotation.CCW
-
-                # is in circle shape
-                # need to determine if ccw or cw
-
-
-        # now have a box for the description of motion
