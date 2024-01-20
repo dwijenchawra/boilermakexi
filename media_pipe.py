@@ -1,18 +1,17 @@
 import cv2
 import mediapipe as mp
-from Gesture_storage.Hand import Hand
+from Gesture_storage.Static_gesture import *
+from Gesture_storage.Gesture_DB import *
 from google.protobuf.json_format import MessageToDict
 from Gesture_storage.utils import *
 
 config = load_config()
 
-
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
-user_gestures = load_json(relative_path=config["db_path"])
-
+gesture_db = Gesture_DB(config["db_path"])
 
 def get_keypoints_from_hand(hand):
     keypoint_pos = []
@@ -57,10 +56,10 @@ with mp_hands.Hands(
 
             classification = MessageToDict(results.multi_handedness[-1])["classification"][-1]
             points = get_keypoints_from_hand(hand)
-            hand = Hand(endpoints=points,
-                        score=classification["score"],
-                        hand=classification["label"],
-                        )
+            hand = init_gesture_from_values(endpoints=points,
+                                            score=classification["score"],
+                                            label=classification["label"],
+                                            )
 
             for hand_landmarks in results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(
