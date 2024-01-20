@@ -1,10 +1,10 @@
 import cv2
 import mediapipe as mp
-from Pose_storage.Pose_DB import *
+from Hand_Tracking.Pose_storage.Pose_DB import *
 from google.protobuf.json_format import MessageToDict
-from Pose_Detection_Model.inference import *
-from Pose_Detection_Model.train import *
-from Gesture_Detection.Detector import *
+from Hand_Tracking.Pose_Detection_Model.inference import *
+from Hand_Tracking.Pose_Detection_Model.train import *
+from Hand_Tracking.Gesture_Detection.Detector import *
 
 config = load_config()
 inference = MLP_Inference(threads=config["threads"])

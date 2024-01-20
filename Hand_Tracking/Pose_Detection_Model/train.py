@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-from Pose_Detection_Model.utils import *
+from Hand_Tracking.Pose_Detection_Model.utils import *
 import torch.nn as nn
 
 RANDOM_SEED = 42

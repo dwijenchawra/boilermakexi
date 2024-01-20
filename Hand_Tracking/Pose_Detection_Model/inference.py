@@ -1,7 +1,7 @@
 import numpy as np
 import torch
-from Pose_Detection_Model.utils import *
-from Pose_storage.utils import *
+from Hand_Tracking.Pose_Detection_Model.utils import *
+from Hand_Tracking.Pose_storage.utils import *
 import copy
 import itertools
 

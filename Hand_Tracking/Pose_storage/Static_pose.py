@@ -1,6 +1,5 @@
 import math
-from Pose_storage.utils import load_config
-from Pose_Detection_Model.inference import *
+from Hand_Tracking.Pose_Detection_Model.inference import *
 
 config = load_config()
 

@@ -1,5 +1,5 @@
-from Pose_storage.utils import *
-from Pose_storage.Static_pose import *
+from Hand_Tracking.Pose_storage.utils import *
+from Hand_Tracking.Pose_storage.Static_pose import *
 
 config = load_config()
 

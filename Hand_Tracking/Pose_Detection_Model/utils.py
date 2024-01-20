@@ -1,5 +1,5 @@
 import torch.nn as nn
-from Pose_storage.utils import *
+from Hand_Tracking.Pose_storage.utils import *
 config = load_config()
 def load_MLP():
     global config

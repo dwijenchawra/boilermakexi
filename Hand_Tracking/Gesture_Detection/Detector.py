@@ -1,5 +1,5 @@
 # gesture detector
-from Pose_storage.utils import *
+from Hand_Tracking.Pose_storage.utils import *
 from enum import Enum
 from collections import deque
 
