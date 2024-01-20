@@ -81,10 +81,11 @@ class Detector:
             return
 
         z_delta = self.q[-1]["z"] - self.q[0]["z"]
-        if z_delta > config["zoom_thresh"]:
-            self.depth = ZDirection.OUT_OF_SCREEN
-        elif z_delta > config["zoom_thresh"]:
+        if z_delta < - config["zoom_thresh"]:
             self.depth = ZDirection.INTO_SCREEN
+        elif z_delta > config["zoom_thresh"]:
+            self.depth = ZDirection.OUT_OF_SCREEN
+
 
         # first determine general shape through points
         x_val = []
@@ -117,6 +118,6 @@ class Detector:
                 self.idle = True
             else:
                 if self.is_clockwise():
-                    self.rotation = Rotation.CW
-                else:
                     self.rotation = Rotation.CCW
+                else:
+                    self.rotation = Rotation.CW
