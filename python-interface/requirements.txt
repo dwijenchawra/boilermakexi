@@ -1,0 +1,5 @@
+open-interpreter
+gtts
+playsound
+pyobjc
+pyaudio
