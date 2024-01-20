@@ -25,7 +25,7 @@ def train():
     print(x.shape)
     print(y.shape)
 
-    x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.75, shuffle=True)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.90, shuffle=True)
     train_loader = DataLoader(list(zip(x_train, y_train)), shuffle=True, batch_size=128)
     valid_loader = DataLoader(list(zip(x_test, y_test)), shuffle=True, batch_size=128)
 

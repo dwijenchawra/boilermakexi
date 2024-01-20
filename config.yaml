@@ -9,9 +9,9 @@ match_threshold: 0.1
 min_side_len_ratio: 10
 min_train_steps: 100
 model_save_path: data/model.pickle
-output_classes: 5
+output_classes: 3
 project_path: /Users/alexiy/Projects/boilermakexi
-sample_count: 100
+sample_count: 50
 threads: 32
 threshold_weights:
 - 0.5
