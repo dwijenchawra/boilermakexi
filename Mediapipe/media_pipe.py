@@ -81,9 +81,9 @@ with mp_hands.Hands(
                     mp_drawing_styles.get_default_hand_landmarks_style(),
                     mp_drawing_styles.get_default_hand_connections_style())
         # Flip the image horizontally for a selfie-view display.
+        image = cv2.flip(image, 1)
         image = cv2.putText(image, text, [50, 50], cv2.FONT_HERSHEY_SIMPLEX,
                             1, color=(255, 0, 0))
-        image = cv2.flip(image, 1)
         cv2.imshow('MediaPipe Hands', image)
         if cv2.waitKey(5) & 0xFF == 27:
             break
