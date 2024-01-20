@@ -1,5 +1,6 @@
 import math
 from Gesture_storage.utils import load_config
+from Gesture_Detection_Model.inference import *
 
 config = load_config()
 

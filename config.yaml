@@ -1,38 +1,34 @@
-project_path: "/Users/alexiy/Projects/boilermakexi"
-db_path: "data/db.json"
-match_threshold: 0.1
 add_threshold: 0.03
-threshold_weights:
-  - 0.5 # bottom of palm
-  # thumb starts
-  - 0.7 # start of thim
-  - 2.9
-  - 4.1
-  - 10
-  # second finger starts
-  - 0.7 # start of thim
-  - 2.9
-  - 4.1
-  - 10
-  # third finger starts
-  - 0.7 # start of thim
-  - 2.9
-  - 4.1
-  - 10
-  # fourth finger starts
-  - 0.7 # start of thim
-  - 2.9
-  - 4.1
-  - 10
-  # fifth finger starts
-  - 0.7 # start of thim
-  - 2.9
-  - 4.1
-  - 10
-dataset_path: 'data/keypoint.csv'
-model_save_path: 'data/model.pickle'
-
-output_classes:  4
-epochs: 500
-min_train_steps: 100
 break_early: 0.03
+dataset_path: data/keypoint.csv
+db_path: data/db.json
+epochs: 500
+inference_threads: 32
+match_threshold: 0.1
+min_train_steps: 100
+model_save_path: data/model.pickle
+output_classes: 5
+project_path: /Users/alexiy/Projects/boilermakexi
+sample_count: 10
+threshold_weights:
+- 0.5
+- 0.7
+- 2.9
+- 4.1
+- 10
+- 0.7
+- 2.9
+- 4.1
+- 10
+- 0.7
+- 2.9
+- 4.1
+- 10
+- 0.7
+- 2.9
+- 4.1
+- 10
+- 0.7
+- 2.9
+- 4.1
+- 10

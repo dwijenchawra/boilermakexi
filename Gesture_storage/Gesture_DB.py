@@ -26,14 +26,15 @@ class Gesture_DB:
             static_gesture.id = f"gesture_{len(self.gestures)}"
             self.gestures.append(static_gesture)
             self.save_gesture_to_json()
+            return True
         else:
-            print("cannot add gesture, to similar to ")
+            return False
 
     def match(self, gesture, min_rmse = config["match_threshold"]):
         min_id = 'n/a'
         for g in self.gestures:
             rmse = g.get_rmse(gesture)
-            print(rmse)
+            # print(rmse)
             if rmse < min_rmse:
                 min_rmse = rmse
                 min_id = g.id

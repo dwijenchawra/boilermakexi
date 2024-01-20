@@ -1,12 +1,9 @@
-import time
-
 import cv2
 import mediapipe as mp
-from Gesture_storage.Static_gesture import *
 from Gesture_storage.Gesture_DB import *
 from google.protobuf.json_format import MessageToDict
-from Gesture_storage.utils import *
 from Gesture_Detection_Model.inference import *
+from Gesture_Detection_Model.train import *
 
 config = load_config()
 inference = MLP_Inference(threads=32)
@@ -24,6 +21,9 @@ def get_keypoints_from_hand(hand):
         # Acquire x, y but don't forget to convert to integer.
         keypoint_pos.append({"x": i["x"], "y": i["y"], "z": i["z"]})
     return keypoint_pos
+
+
+tmp_dataset = []
 
 
 def show_hand(hand, image):
@@ -65,26 +65,45 @@ with mp_hands.Hands(
             classification = MessageToDict(results.multi_handedness[-1])["classification"][-1]
             points = get_keypoints_from_hand(hand)
             inference_pts = [[pt["x"], pt["y"]] for pt in points]
-            flat_arr = np.reshape(np.array(inference_pts), len(inference_pts) * 2)
+            landmark_list = calc_landmark_list(image, results.multi_hand_landmarks[-1])
+
+            pre_processed_landmark_list = pre_process_landmark(landmark_list)
             gesture = init_gesture_from_values(endpoints=points,
                                                score=classification["score"],
                                                label=classification["label"],
                                                id="n/a",
                                                )
-            landmark_list = calc_landmark_list(image, results.multi_hand_landmarks[-1])
-
-            # Conversion to relative coordinates / normalized coordinates
-            pre_processed_landmark_list = pre_process_landmark(landmark_list)
-            # Hand sign classification
-            print(inference(pre_processed_landmark_list))
 
             id = gesture_db.match(gesture)
-            print(id)
+            inference_id = inference(pre_processed_landmark_list)
+            print(id, inference_id)
             text = id
 
             key = cv2.waitKey(5) & 0xFF
             if key == ord("a"):
+                if id == 'n/a':
+                    # succeed in being different enough
+                    # need to appent datapoints to a tmp dataset
+                    row = [len(gesture_db.gestures)]
+                    row.extend(pre_processed_landmark_list)
+                    tmp_dataset.append(row)
+            else:
+                if len(tmp_dataset) != 0 and len(tmp_dataset) < config["sample_count"]:
+                    print("error, not enough dataset has been generated, please regenerat a new one")
+                    tmp_dataset = []
+
+            # check if enough of dataset is created:
+            if len(tmp_dataset) > config["sample_count"]:
+                # can extend the csv file and retain the model
                 gesture_db.add_static_gesture(gesture)
+                add_to_csv(tmp_dataset, config["dataset_path"])
+                tmp_dataset = []
+                # now need to train
+                config["output_classes"] += 1
+                update_config(config)
+                train()
+
+                inference = MLP_Inference(threads=config["inference_threads"])
 
             for hand_landmarks in results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(

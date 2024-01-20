@@ -54,7 +54,7 @@ def calc_landmark_list(image, landmarks):
 class MLP_Inference(object):
     def __init__(self, threads=1, output_classes=config["output_classes"]):
         self.model = torch.load(config["model_save_path"])
-        torch.set_num_threads(threads)
+        torch.set_num_threads(int(threads))
 
     def __call__(
             self,
@@ -64,5 +64,4 @@ class MLP_Inference(object):
         inp = inp.unsqueeze(0)
         out = self.model(inp)
         out = out.squeeze(0)
-        print(out)
         return np.argmax(np.squeeze(out.detach().numpy()))
