@@ -15,11 +15,13 @@ output_classes = config["output_classes"]
 
 
 def train():
+    global config
+    config = load_config()
     x = np.loadtxt(dataset, delimiter=',', dtype='float32', usecols=list(range(1, (21 * 2) + 1)))
 
     y = np.loadtxt(dataset, delimiter=',', dtype='long', usecols=(0))
     if len(x) == 0:
-        return load_MLP(config["output_classes"])
+        return load_MLP()
     print(x.shape)
     print(y.shape)
 
@@ -29,7 +31,7 @@ def train():
 
     print(next(enumerate(train_loader)))
 
-    model = load_MLP(config["output_classes"])
+    model = load_MLP()
     print(model)
 
     loss_fn = nn.CrossEntropyLoss()
