@@ -6,8 +6,10 @@ from Gesture_storage.Static_gesture import *
 from Gesture_storage.Gesture_DB import *
 from google.protobuf.json_format import MessageToDict
 from Gesture_storage.utils import *
+from Gesture_Detection_Model.inference import *
 
 config = load_config()
+inference = MLP_Inference(threads=32)
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -62,11 +64,20 @@ with mp_hands.Hands(
 
             classification = MessageToDict(results.multi_handedness[-1])["classification"][-1]
             points = get_keypoints_from_hand(hand)
+            inference_pts = [[pt["x"], pt["y"]] for pt in points]
+            flat_arr = np.reshape(np.array(inference_pts), len(inference_pts) * 2)
             gesture = init_gesture_from_values(endpoints=points,
                                                score=classification["score"],
                                                label=classification["label"],
                                                id="n/a",
                                                )
+            landmark_list = calc_landmark_list(image, results.multi_hand_landmarks[-1])
+
+            # Conversion to relative coordinates / normalized coordinates
+            pre_processed_landmark_list = pre_process_landmark(landmark_list)
+            # Hand sign classification
+            print(inference(pre_processed_landmark_list))
+
             id = gesture_db.match(gesture)
             print(id)
             text = id

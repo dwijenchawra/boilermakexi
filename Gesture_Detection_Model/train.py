@@ -28,7 +28,7 @@ valid_loader = DataLoader(list(zip(x_test, y_test)), shuffle=True, batch_size=12
 
 print(next(enumerate(train_loader)))
 
-model = load_MLP()
+model = load_MLP(config["output_classes"])
 print(model)
 
 loss_fn = nn.CrossEntropyLoss()
