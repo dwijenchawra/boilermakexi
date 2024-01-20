@@ -28,11 +28,11 @@ class Static_gesture():
         return d
 
     def get_rmse(self, g):
-        all_dist = 0.
+        rmse_x = 0.
+        rmse_y = 0.
         for i in range(len(self.points)):
-            p1 = self.points[i]
-            p2 = g.points[i]
-            all_dist += get_dist(p1, p2)
-        return all_dist / len(self.points)
+            rmse_x += (g.points[i]["x"] - self.points[i]["x"]) * (g.points[i]["x"] - self.points[i]["x"])
+            rmse_y += (g.points[i]["y"] - self.points[i]["y"]) * (g.points[i]["y"] - self.points[i]["y"])
+        return sum([rmse_x / len(self.points), rmse_y / len(self.points)]) / 2
 
         # loop over

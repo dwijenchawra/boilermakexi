@@ -16,9 +16,9 @@ config = load_config()
 
 
 def save_dict_as_json(data, path):
-    path = os.path.join(current_name, path)
-    with open(data, 'w') as path:
-        json.dump(data, path)
+    path = os.path.join(config["project_path"], path)
+    with open(path, 'w') as f:
+        json.dump(data, f)
 
 
 def load_json(relative_path):

@@ -20,11 +20,20 @@ class Gesture_DB:
         gestures = {"gestures": [gesture.get_json_data() for gesture in self.gestures]}
         save_dict_as_json(gestures, self.db_path)
 
-    def match(self, gesture):
-        min_rmse = config["match_threshold"]
+    def add_static_gesture(self, static_gesture):
+        min_id = self.match(static_gesture, min_rmse=config["add_threshold"])
+        if min_id == "n/a":
+            static_gesture.id = f"gesture_{len(self.gestures)}"
+            self.gestures.append(static_gesture)
+            self.save_gesture_to_json()
+        else:
+            print("cannot add gesture, to similar to ")
+
+    def match(self, gesture, min_rmse = config["match_threshold"]):
         min_id = 'n/a'
         for g in self.gestures:
             rmse = g.get_rmse(gesture)
+            print(rmse)
             if rmse < min_rmse:
                 min_rmse = rmse
                 min_id = g.id
