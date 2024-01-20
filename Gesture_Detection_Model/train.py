@@ -19,6 +19,8 @@ def train():
     x = np.loadtxt(dataset, delimiter=',', dtype='float32', usecols=list(range(1, (21 * 2) + 1)))
 
     y = np.loadtxt(dataset, delimiter=',', dtype='long', usecols=(0))
+    if len(x) == 0:
+        return
     print(x.shape)
     print(y.shape)
 

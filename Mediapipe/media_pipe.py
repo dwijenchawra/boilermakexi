@@ -6,6 +6,7 @@ from Gesture_Detection_Model.inference import *
 from Gesture_Detection_Model.train import *
 
 config = load_config()
+train()
 inference = MLP_Inference(threads=32)
 
 mp_drawing = mp.solutions.drawing_utils
@@ -13,7 +14,6 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
 gesture_db = Gesture_DB(config["db_path"])
-
 
 def get_keypoints_from_hand(hand):
     keypoint_pos = []
