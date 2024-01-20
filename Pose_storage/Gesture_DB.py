@@ -1,5 +1,5 @@
-from Gesture_storage.utils import *
-from Gesture_storage.Static_gesture import *
+from Pose_storage.utils import *
+from Pose_storage.Static_gesture import *
 
 config = load_config()
 

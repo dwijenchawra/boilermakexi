@@ -1,9 +1,9 @@
 import cv2
 import mediapipe as mp
-from Gesture_storage.Gesture_DB import *
+from Pose_storage.Gesture_DB import *
 from google.protobuf.json_format import MessageToDict
-from Gesture_Detection_Model.inference import *
-from Gesture_Detection_Model.train import *
+from Pose_Detection_Model.inference import *
+from Pose_Detection_Model.train import *
 
 config = load_config()
 train()

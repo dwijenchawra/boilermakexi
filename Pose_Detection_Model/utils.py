@@ -1,5 +1,5 @@
 import torch.nn as nn
-from Gesture_storage.utils import *
+from Pose_storage.utils import *
 config = load_config()
 def load_MLP(output_classes: config["output_classes"]):
     model = nn.Sequential()

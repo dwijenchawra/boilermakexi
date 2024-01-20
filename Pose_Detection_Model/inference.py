@@ -1,7 +1,7 @@
 import numpy as np
 import torch
-from Gesture_Detection_Model.utils import *
-from Gesture_storage.utils import *
+from Pose_Detection_Model.utils import *
+from Pose_storage.utils import *
 import copy
 import itertools
 
