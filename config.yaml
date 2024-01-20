@@ -30,5 +30,9 @@ threshold_weights:
   - 4.1
   - 10
 dataset_path: 'data/keypoint.csv'
-model_save_path: 'model/keypoint_classifier/keypoint_classifier.hdf5'
-output_classes:  3
+model_save_path: 'data/model.pickle'
+
+output_classes:  4
+epochs: 500
+min_train_steps: 100
+break_early: 0.03
