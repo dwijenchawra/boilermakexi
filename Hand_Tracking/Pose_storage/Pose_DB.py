@@ -1,10 +1,14 @@
 from Hand_Tracking.Pose_storage.utils import *
 from Hand_Tracking.Pose_storage.Static_pose import *
+from Hand_Tracking.Debouncer.debounce import debounce
 
 config = load_config()
 
 
 def load_pose_from_json(path: config["db_path"]):
+    if not os.path.exists(path):
+        save_dict_as_json({"poses": []}, path)
+
     raw_data = load_json(path)
     raw_pose = raw_data['poses']
     poses = [Static_pose(pose) for pose in raw_pose]
@@ -30,6 +34,7 @@ class Pose_DB:
         else:
             return False
 
+    @debounce(config["debounce_time_inference"], 'n/a')
     def match(self, pose, min_rmse=config["match_threshold"]):
         min_id = 'n/a'
         for g in self.poses:

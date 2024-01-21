@@ -2,7 +2,7 @@
 from Hand_Tracking.Pose_storage.utils import *
 from enum import Enum
 from collections import deque
-
+from Hand_Tracking.Debouncer.debounce import debounce
 
 class ZDirection(Enum):
     INTO_SCREEN = 0
@@ -28,6 +28,8 @@ config = load_config()
 
 
 def get_min_side_length(x_len, y_len, camera_width, camera_height):
+    x_len = max(x_len, 0.01)
+    y_len = max(y_len, 0.01)
     return min(camera_width / x_len, camera_height / y_len)
 
 
@@ -41,6 +43,7 @@ class Detector:
         self.time_delta = time_delta
         # plot a rectangle for the points
 
+    @debounce(config["debounce_time_direction_depth"], ['n/a', 'n/a'])
     def get_state(self):
         depth_state = self.depth.name
         if self.rotation != Rotation.N_A:
@@ -55,7 +58,7 @@ class Detector:
         if self.idle:
             return "idle", self.depth.name
 
-        return "n/a"
+        return "n/a", "n/a"
 
     def is_clockwise(self):
         # points is your list (or array) of 2d points.
@@ -77,6 +80,7 @@ class Detector:
         return area
 
     def update_state(self, point, camera_height, camera_width):
+        print("update state")
         self.rotation = Rotation.N_A
         self.idle = False
         self.translation = Translation.N_A

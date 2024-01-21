@@ -4,6 +4,7 @@ from Hand_Tracking.Pose_Detection_Model.utils import *
 from Hand_Tracking.Pose_storage.utils import *
 import copy
 import itertools
+from Hand_Tracking.Debouncer.debounce import debounce
 
 import numpy as np
 
@@ -75,6 +76,7 @@ class MLP_Inference(object):
             update_config(config)
         torch.set_num_threads(int(threads))
 
+    @debounce(config["debounce_time_inference"], 'n/a')
     def __call__(
             self,
             landmark_list,

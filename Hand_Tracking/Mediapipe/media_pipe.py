@@ -5,6 +5,7 @@ from google.protobuf.json_format import MessageToDict
 from Hand_Tracking.Pose_Detection_Model.inference import *
 from Hand_Tracking.Pose_Detection_Model.train import *
 from Hand_Tracking.Gesture_Detection.Detector import *
+from Hand_Tracking.Debouncer.debounce import debounce
 
 config = load_config()
 inference = MLP_Inference(threads=config["threads"])
@@ -81,7 +82,12 @@ with mp_hands.Hands(
                                          )
 
             id = pose_db.match(pose)
+
+
             inference_id = inference(pre_processed_landmark_list)
+
+            #print("inference_id  -----------   ", inference_id)
+
             # print(id, inference_id)
             text = f"{id}, {inference_id}"
 
@@ -110,10 +116,21 @@ with mp_hands.Hands(
                 train()
 
                 inference = MLP_Inference(threads=config["inference_threads"])
+
             image_width, image_height = image.shape[1], image.shape[0]
             detector.update_state(point, image_width, image_height)
-            print(detector.get_state())
-            text = f"{text}, {detector.get_state()}"
+            temp = detector.get_state()
+
+
+            # temp is a tuple
+            three, four = temp
+
+            # id, inference_id, three four
+            # format this string with width 10, just ljust it
+            width = 10
+
+            text = f"{str(id).ljust(width)} {str(inference_id).ljust(width)} {str(three).ljust(width)} {str(four).ljust(width)}"
+
 
             for hand_landmarks in results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(
@@ -125,7 +142,7 @@ with mp_hands.Hands(
         # Flip the image horizontally for a selfie-view display.
         image = cv2.flip(image, 1)
         image = cv2.putText(image, text, [50, 50], cv2.FONT_HERSHEY_SIMPLEX,
-                            1, color=(255, 0, 0))
+                            1, color=(255, 0, 0), thickness=3)
         cv2.imshow('MediaPipe Hands', image)
         if cv2.waitKey(5) & 0xFF == 27:
             break
