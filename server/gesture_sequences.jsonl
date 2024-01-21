@@ -1,0 +1,22 @@
+{
+  "sequence_name": "test",
+  "compatible_model": "model001.pkl",
+  "gesture_sequence": [
+    {
+      "p_class": "pose1",
+      "p_name": "right hand open right"
+    },
+    {
+      "d_type": "direction",
+      "d_class": "pose1",
+    },
+    {
+      "p_class": "pose2",
+      "p_name": "right hand open left"
+    }
+  ],
+  "action": "switch_tabs"
+}
+{
+
+}
