@@ -32,6 +32,10 @@ child.stdout.on("data", function (data) {
   console.log("stdout:\n" + data);
 });
 
+child.stdout.on("data", function (data) {
+  console.log("stdout:\n" + data);
+});
+
 child.on("error", function (err) {
   console.log(err);
 });
