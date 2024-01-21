@@ -9,6 +9,8 @@ from Hand_Tracking.Pose_Detection_Model.train import *
 from Hand_Tracking.Gesture_Detection.Detector import *
 from Hand_Tracking.Debouncer.debounce import debounce
 from flask_cors import CORS, cross_origin
+import subprocess
+import os
 
 
 app = Flask(__name__)
@@ -28,6 +30,7 @@ def hello_world():
     print("hello world endpoint is running")
     return "<p>Hello, World!</p>"
 
+#load gesture-action pair from cloud or local
 @app.route("/load_pairs")
 def load_pairs(pairs):
 
@@ -35,12 +38,46 @@ def load_pairs(pairs):
 
     return pairs
 
+#upload gesture-action pair to cloud and local
 @app.route("/save_pairs")
 def save_pairs(pairs):
 
     #pairs json
 
     return pairs
+
+#script execution
+'''
+Example usage
+result = execute_script('/path/to/your/script.py')
+print(result)
+'''
+
+def execute_script(script_path):
+    try:
+        # Check if the file exists
+        if not os.path.exists(script_path):
+            return "Script file does not exist"
+
+        # Determine the type of script based on its extension
+        _, file_extension = os.path.splitext(script_path)
+
+        if file_extension == '.py':
+            # Execute a Python script
+            subprocess.run(['python', script_path], check=True)
+        elif file_extension == '.scpt':
+            # Execute an AppleScript file
+            subprocess.run(['osascript', script_path], check=True)
+        else:
+            return "Unsupported script type"
+
+        return "Execution successful"
+    except subprocess.CalledProcessError as e:
+        return f"An error occurred during script execution: {e}"
+    except Exception as e:
+        return f"An error occurred: {e}"
+    
+
 
 #hand_tracking stuff
 def video_processing():
@@ -210,6 +247,7 @@ def train_gesture(gesture):
 
     return "successful"
 
+'''
 @app.route("/delete_gesture")
 def delete_gesture(gesture):
 
@@ -225,6 +263,7 @@ def rename_gesture_gesture(gesture):
 def message_interpreter(message):
     response = interpreter.chat(message)
     return response
+'''
 
 #get frames from video processing 
 def gen_frames():  
@@ -240,13 +279,6 @@ def gen_frames():
 @app.route('/video_feed')
 def video_feed():
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-class Wave:
-    def __init__(self):
-        # self.is_running = False
-        # self.thread = None
-        return
-
 
 if __name__ == "__main__":
     app.run(port=8000, debug=True)
