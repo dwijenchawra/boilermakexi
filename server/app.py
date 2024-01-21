@@ -11,9 +11,9 @@ from Hand_Tracking.Debouncer.debounce import debounce
 from flask_cors import CORS, cross_origin
 import subprocess
 import os
-from audio_recorder import AudioRecorder as ar
+from audio_recorder import AudioRecorder
 import time
-from transcription_service import TranscriptionService as ts
+from transcription_service import TranscriptionService
 import re
 
 app = Flask(__name__)
@@ -24,8 +24,11 @@ latest_frame = None
 #webcam
 cap = cv2.VideoCapture(0)
 #thread control
-stop_wave = Event()
-stop_alright_wave = Event()
+stop_wave_event = Event()
+stop_alright_wave_event = Event()
+
+command_text= ""
+alright_wave_string = ""
 
 app = Flask(__name__)
 
@@ -83,7 +86,7 @@ def execute_script(script_path):
 
 #hand_tracking stuff
 def video_processing():
-    global stop_wave
+    global stop_wave_event
     global latest_frame
     config = load_config()
     inference = MLP_Inference(threads=config["threads"])
@@ -120,7 +123,7 @@ def video_processing():
             model_complexity=0,
             min_detection_confidence=0.5,
             min_tracking_confidence=0.5) as hands:
-        while cap.isOpened() and not stop_wave.is_set():
+        while cap.isOpened() and not stop_wave_event.is_set():
 
             success, image = cap.read()
             if not success:
@@ -233,59 +236,45 @@ def video_processing():
 @app.route("/start_wave")
 @cross_origin()
 def start_wave():
-    global stop_wave
-    stop_wave.clear()
+    global stop_wave_event
+    stop_wave_event.clear()
     thread = Thread(target=video_processing)
     thread.start()
     return "Video processing started"
 
 @app.route("/stop_wave")
 def stop_wave():
-    global stop_wave
-    stop_wave.set()  # Signal the thread to stop
+    global stop_wave_event
+    stop_wave_event.set()  # Signal the thread to stop
     return "Video processing stopped"
 
-def append_and_trim_file(file_path, text, max_lines=50, remove_lines=20):
-    # Read the existing content of the file
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
-
-    # Check if the line count exceeds the maximum allowed
-    if len(lines) >= max_lines:
-        # Remove the first 'remove_lines' lines
-        lines = lines[remove_lines:]
-
-    # Append the new text
-    lines.append(text + "\n")
-
-    # Write the modified content back to the file
-    with open(file_path, 'w') as file:
-        file.writelines(lines)
-
-def check_for_phrase(file_path, phrase):
+def check_for_phrase(string, *args):
+    global alright_wave_string
+    # Get the phrase to check for  
     # Read the file content
-    with open(file_path, 'r') as file:
-        text = file.read()
-
-    # Remove punctuation and extra spaces, and convert to lower case
-    cleaned_text = re.sub(r'[^\w\s]', '', text).lower()
-    
+    cleaned_text = re.sub(r'[^\w\s]', '', string).lower()
     # Check if the phrase appears in the text
-    return phrase in cleaned_text
+    for (i, phrase) in enumerate(args):
+        if phrase in cleaned_text:
+            alright_wave_string = ""
+            return True
 
 def alright_wave():
-    global stop_alright_wave
-    while not stop_alright_wave.is_set():
+    ar = AudioRecorder()
+    ts = TranscriptionService()
+    global command_text
+    global stop_alright_wave_event
+    global alright_wave_string
+    while not stop_alright_wave_event.is_set():
         # Record and transcribe
         ar.start_recording()
         time.sleep(5)
         ar.stop_recording()
         ar._save_recording()
         text = ts.transcribe_audio("recording.wav")
-        append_and_trim_file('alrightwave.txt', text)
-
+        alright_wave_string = f"{alright_wave_string} {text}"
         # Check for wake phrase
-        if check_for_phrase('alrightwave.txt', 'alright wave'):
+        if check_for_phrase(alright_wave_string, 'alright wave', 'all right wave', 'all rightwave', 'alrightwave'):
             print("Wake phrase detected. Listening for command...")
 
             # Record a command after wake phrase is detected
@@ -297,30 +286,34 @@ def alright_wave():
             command_text = ts.transcribe_audio("recording.wav")
 
             # Process the command
-            process_command(command_text)
+            process_command()
 
-def process_command(command_text):
-    if command_text == "start wave":
-        start_wave()
-    elif command_text == "stop wave":
-        stop_wave()
-    elif command_text == "train gesture":
-        train_gesture()    
-    
+def process_command():
+    if check_for_phrase(command_text, 'start wave'):
+        with app.app_context():
+            start_wave()
+    elif check_for_phrase(command_text, 'stop wave'):
+        with app.app_context():
+            stop_wave()
+    elif check_for_phrase(command_text, 'train gesture'):
+        with app.app_context():
+            train_gesture()    
+
 
 @app.route("/start_alright_wave")
 def start_alright_wave():
-    global stop_alright_wave
-    stop_alright_wave.clear()
+    global stop_alright_wave_event
+    stop_alright_wave_event.clear()
     thread = Thread(target=alright_wave)
     thread.start()
     return "Alright Wave started"
 
 @app.route("/stop_alright_wave")
 def stop_alright_wave():
-    global stop_alright_wave
-    stop_alright_wave.set()
+    global stop_alright_wave_event
+    stop_alright_wave_event.set()
     return "Alright Wave stopped"
+
 
 @app.route("/train_gesture")
 def train_gesture(gesture):
