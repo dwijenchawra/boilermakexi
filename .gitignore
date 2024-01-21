@@ -187,4 +187,4 @@ fabric.properties
 python-interface/whisper.cpp/
 server/whisper.cpp/
 frontend/node_modules/
-frontend/package_lock.json
+frontend/package-lock.json
