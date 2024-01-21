@@ -1,0 +1,45 @@
+{
+  "compatible_model": "model001.pkl",
+  "pose_classes": [
+    {
+      "p_class": "pose_0",
+      "p_name": "right hand open right"
+    },
+    {
+      "p_class": "pose_1",
+      "p_name": "right hand open left"
+    }
+  ],
+  "gesture_sequences": [
+    {
+      "seq_name": "swipe",
+      "seq": [
+        {
+          "p_class": "pose_0"
+        },
+        {
+          "d_class": "LEFT"
+        },
+        {
+          "p_class": "pose_1"
+        }
+      ],
+      "action": "switch_desk_left.scpt"
+    },
+    {
+      "seq_name": "swiperight",
+      "seq": [
+        {
+          "p_class": "pose_1"
+        },
+        {
+          "d_class": "RIGHT"
+        },
+        {
+          "p_class": "pose_0"
+        }
+      ],
+      "action": "switch_desk_right.scpt"
+    }
+  ]
+}
