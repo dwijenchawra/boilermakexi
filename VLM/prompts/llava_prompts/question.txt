@@ -1,0 +1,10 @@
+Track and describe the hand as it moves from frame to frame within the video.
+Only Describe the hand, do not describe the man or the purpose of the hand.
+
+FORMAT:
+
+for every frame describe the following:
+- Hand positioning
+- motion relative to other frames
+
+Make sure to take your time in your answers.
