@@ -15,7 +15,7 @@ class TranscriptionService:
             # Clean the transcription
             cleaned_transcription = self._clean_transcription(transcription)
             print(cleaned_transcription)
-            return f'{cleaned_transcription}. Keep your response brief'
+            return cleaned_transcription
         except subprocess.CalledProcessError as e:
             print(f"An error occurred while transcribing: {e}")
             return None
