@@ -2,11 +2,16 @@ from flask import Flask, Response
 import cv2
 import mediapipe as mp
 
+from flask_cors import CORS, cross_origin
+app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 app = Flask(__name__)
 
 @app.route("/")
 def hello_world():
+    print("hello world endpoint is running")
     return "<p>Hello, World!</p>"
 
 @app.route("/load_pairs")
@@ -24,12 +29,13 @@ def save_pairs(pairs):
     return pairs
 
 @app.route("/start_wave")
+@cross_origin()
 def start_wave():
+    print("we have begun recording")
     # is_running = True
     # thread = _detect_wave()
     # success = start thread
     # return success 
-    return
     
 def _running_wave():
     # run media_pipe.py
@@ -37,7 +43,6 @@ def _running_wave():
         # match debounced output to user gesture sequences
         # if match
             # run mapped action
-    return
 
 @app.route("/stop_wave")
 def stop_wave():
@@ -91,8 +96,7 @@ def video_feed():
 class Wave:
     def __init__(self):
         # self.is_running = False
-        # self.thread = None (maybe use subprocess instead)
-        return
+        # self.thread = None
 
 
 

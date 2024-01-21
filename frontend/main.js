@@ -11,7 +11,8 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 700,
-    titleBarStyle: "hiddenInset",
+    titleBarStyle: "hidden",
+    trafficLightPosition: { x: 15, y: 15 },
     webPreferences: {
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
@@ -26,6 +27,10 @@ const createWindow = () => {
 };
 
 const child = spawn("flask", ["--app", "../server/app", "run"]);
+
+child.stdout.on("data", function (data) {
+  console.log("stdout:\n" + data);
+});
 
 child.on("error", function (err) {
   console.log(err);
