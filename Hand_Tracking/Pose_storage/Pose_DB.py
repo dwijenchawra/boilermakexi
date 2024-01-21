@@ -6,7 +6,9 @@ config = load_config()
 
 
 def load_pose_from_json(path: config["db_path"]):
-    if not os.path.exists(path):
+    # check if file exists
+    if not os.path.isfile(path):
+        # create file
         save_dict_as_json({"poses": []}, path)
 
     raw_data = load_json(path)
