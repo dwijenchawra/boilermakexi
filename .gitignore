@@ -183,4 +183,6 @@ fabric.properties
 
 # idea folder, uncomment if you don't need it
 .idea
+
 python-interface/whisper.cpp/
+server/whisper.cpp/
