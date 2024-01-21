@@ -236,11 +236,19 @@ def video_processing():
 @app.route("/start_wave")
 @cross_origin()
 def start_wave():
-    global stop_wave_event
-    stop_wave_event.clear()
-    thread = Thread(target=video_processing)
-    thread.start()
-    return "Video processing started"
+    print("we have begun recording")
+    # is_running = True
+    # thread = _detect_wave()
+    # success = start thread
+    # return success
+    
+def _running_wave():
+    # run media_pipe.py
+    # while is_running:
+        # match debounced output to user gesture sequences
+        # if match
+            # run mapped action
+    return
 
 @app.route("/stop_wave")
 def stop_wave():
@@ -353,5 +361,13 @@ def gen_frames():
 def video_feed():
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-if __name__ == "__main__":
-    app.run(port=8000, debug=True)
+
+class Wave:
+    def __init__(self):
+        # self.is_running = False
+        # self.thread = None
+        return
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
