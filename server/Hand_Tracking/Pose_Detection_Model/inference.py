@@ -87,4 +87,12 @@ class MLP_Inference(object):
         inp = inp.unsqueeze(0)
         out = self.model(inp)
         out = out.squeeze(0)
-        return np.argmax(np.squeeze(out.detach().numpy()))
+        out = np.squeeze(out.detach().numpy())
+
+        # check if any single output is above threshold
+        print(out)
+        for i, o in enumerate(out):
+            if o >= 0.99:
+                return np.argmax(out)
+
+        return "n/a"

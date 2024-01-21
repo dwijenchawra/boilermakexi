@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -70,6 +72,7 @@ def train():
     plt.show()
     path = os.path.join(config["project_path"], config["model_save_path"])
     torch.save(model, path)
+    # pickle.dump(model, open(path, 'wb'))
 
 
 if __name__ == "__main__":

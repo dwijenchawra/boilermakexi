@@ -1,3 +1,4 @@
+actions_directory: /Users/dwijen/Documents/CODE/boilermakexi/actions
 add_threshold: 0.03
 break_early: 0.03
 dataset_path: data/blank.csv
@@ -5,14 +6,15 @@ db_path: data/new_db.json
 debounce_time_direction_depth: 0.2
 debounce_time_inference: 0.2
 epochs: 500
+gest_seq_path: /Users/dwijen/Documents/CODE/boilermakexi/Hand_Tracking/gesture_sequences.json
 inference_threads: 32
 linear_bound: 2.5
 match_threshold: 0.1
 min_side_len_ratio: 10
 min_train_steps: 100
 model_save_path: data/model.pickle
-output_classes: 4
-project_path: /Users/jj/boilermakexi/Hand_Tracking
+output_classes: 2
+project_path: /Users/dwijen/Documents/CODE/boilermakexi/Hand_Tracking
 sample_count: 25
 threads: 32
 threshold_weights:

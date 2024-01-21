@@ -80,7 +80,7 @@ class Detector:
         return area
 
     def update_state(self, point, camera_height, camera_width):
-        print("update state")
+        #print("update state")
         self.rotation = Rotation.N_A
         self.idle = False
         self.translation = Translation.N_A
@@ -93,7 +93,7 @@ class Detector:
             return
 
         z_delta = self.q[-1]["z"] - self.q[0]["z"]
-        print(z_delta)
+        # print(z_delta)
         if z_delta < - config["zoom_thresh"]:
             self.depth = ZDirection.INTO_SCREEN
         elif z_delta > config["zoom_thresh"]:
