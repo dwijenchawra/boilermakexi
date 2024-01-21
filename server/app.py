@@ -1,5 +1,5 @@
 from threading import Thread, Event
-from flask import Flask, Response
+from flask import Flask, Response, request
 import cv2
 import mediapipe as mp
 from Hand_Tracking.Pose_storage.Pose_DB import *
@@ -15,6 +15,7 @@ from audio_recorder import AudioRecorder
 import time
 from transcription_service import TranscriptionService
 import re
+from interpreter import interpreter
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -26,6 +27,7 @@ cap = cv2.VideoCapture(0)
 #thread control
 stop_wave_event = Event()
 stop_alright_wave_event = Event()
+training_event = Event()
 
 command_text= ""
 alright_wave_string = ""
@@ -88,6 +90,8 @@ def execute_script(script_path):
 def video_processing():
     global stop_wave_event
     global latest_frame
+    global training_event
+
     config = load_config()
     inference = MLP_Inference(threads=config["threads"])
     # double load because might reset output
@@ -167,8 +171,7 @@ def video_processing():
                 # print(id, inference_id)
                 text = f"{id}, {inference_id}"
 
-                key = cv2.waitKey(5) & 0xFF
-                if key == ord("a"):
+                if training_event.is_set():
                     if id == 'n/a':
                         # succeed in being different enough
                         # need to appent datapoints to a tmp dataset
@@ -192,6 +195,8 @@ def video_processing():
                     train()
 
                     inference = MLP_Inference(threads=config["inference_threads"])
+                    training_event.clear()
+                    #query frontend that training has ended
 
                 image_width, image_height = image.shape[1], image.shape[0]
                 detector.update_state(point, image_width, image_height)
@@ -232,29 +237,30 @@ def video_processing():
             '''
             latest_frame = image
 
+def start_wave_internal():
+    global stop_wave_event
+    stop_wave_event.clear()
+    thread = Thread(target=video_processing)
+    thread.start()
+    return "Video processing started"
 
 @app.route("/start_wave")
 @cross_origin()
 def start_wave():
-    print("we have begun recording")
-    # is_running = True
-    # thread = _detect_wave()
-    # success = start thread
-    # return success
-    
-def _running_wave():
-    # run media_pipe.py
-    # while is_running:
-        # match debounced output to user gesture sequences
-        # if match
-            # run mapped action
-    return
+    with app.app_context():
+        return start_wave_internal()
 
-@app.route("/stop_wave")
-def stop_wave():
+def stop_wave_internal():
     global stop_wave_event
     stop_wave_event.set()  # Signal the thread to stop
     return "Video processing stopped"
+
+@app.route("/stop_wave")
+@cross_origin()
+def stop_wave():
+    with app.app_context():
+        return stop_wave_internal()
+
 
 def check_for_phrase(string, *args):
     global alright_wave_string
@@ -276,7 +282,7 @@ def alright_wave():
     while not stop_alright_wave_event.is_set():
         # Record and transcribe
         ar.start_recording()
-        time.sleep(5)
+        time.sleep(2.5)
         ar.stop_recording()
         ar._save_recording()
         text = ts.transcribe_audio("recording.wav")
@@ -288,7 +294,7 @@ def alright_wave():
             # Record a command after wake phrase is detected
             ar.start_recording()
             #super jank way to do this (only 5 second commands at most allowed)
-            time.sleep(5)
+            time.sleep(4)
             ar.stop_recording()
             ar._save_recording()
             command_text = ts.transcribe_audio("recording.wav")
@@ -298,12 +304,15 @@ def alright_wave():
 
 def process_command():
     if check_for_phrase(command_text, 'start wave'):
+        print("start wave")
         with app.app_context():
-            start_wave()
+            start_wave_internal()
     elif check_for_phrase(command_text, 'stop wave'):
+        print("stop wave")
         with app.app_context():
-            stop_wave()
+            stop_wave_internal()
     elif check_for_phrase(command_text, 'train gesture'):
+        print("train gesture")
         with app.app_context():
             train_gesture()    
 
@@ -322,11 +331,19 @@ def stop_alright_wave():
     stop_alright_wave_event.set()
     return "Alright Wave stopped"
 
-
 @app.route("/train_gesture")
-def train_gesture(gesture):
+def train_gesture():
+    time.sleep(3)
+    global training_event
+    training_event.set()
+    return "Gesture training started"
 
-    return "successful"
+@app.route("/create_action")
+def create_action():
+    instructions = request.form['instructions']
+    interpreter.auto_run = True
+    response = interpreter.chat(instructions)
+    return response
 
 '''
 @app.route("/delete_gesture")
