@@ -2,19 +2,24 @@ from threading import Thread, Event
 from flask import Flask, Response
 import cv2
 import mediapipe as mp
-import queue
-
 from Hand_Tracking.Pose_storage.Pose_DB import *
 from google.protobuf.json_format import MessageToDict
 from Hand_Tracking.Pose_Detection_Model.inference import *
 from Hand_Tracking.Pose_Detection_Model.train import *
 from Hand_Tracking.Gesture_Detection.Detector import *
 from Hand_Tracking.Debouncer.debounce import debounce
-
 from flask_cors import CORS, cross_origin
+
+
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
+#video processing
+latest_frame = None
+#webcam
+cap = cv2.VideoCapture(0)
+#thread control
+stop_event = Event()
 
 app = Flask(__name__)
 
@@ -37,21 +42,10 @@ def save_pairs(pairs):
 
     return pairs
 
-#video processing
-latest_frame = None
-#webcam
-cap = cv2.VideoCapture(0)
-
-#thread control
-stop_event = Event()
-
-
+#hand_tracking stuff
 def video_processing():
     global stop_event
     global latest_frame
-
-    
-    # Add the video processing code here
     config = load_config()
     inference = MLP_Inference(threads=config["threads"])
     # double load because might reset output
@@ -64,7 +58,6 @@ def video_processing():
     pose_db = Pose_DB(config["db_path"])
     detector = Detector(time_delta=config["time_delta"])
 
-
     def get_keypoints_from_hand(hand):
         keypoint_pos = []
         for i in hand["landmark"]:
@@ -72,9 +65,7 @@ def video_processing():
             keypoint_pos.append({"x": i["x"], "y": i["y"], "z": i["z"]})
         return keypoint_pos
 
-
     tmp_dataset = []
-
 
     def show_hand(hand, image):
         mp_drawing.draw_landmarks(
@@ -84,7 +75,6 @@ def video_processing():
             mp_drawing_styles.get_default_hand_landmarks_style(),
             mp_drawing_styles.get_default_hand_connections_style())
 
-
     # For webcam input:
 
     with mp_hands.Hands(
@@ -93,14 +83,12 @@ def video_processing():
             min_tracking_confidence=0.5) as hands:
         while cap.isOpened() and not stop_event.is_set():
 
-            
             success, image = cap.read()
             if not success:
                 print("Ignoring empty camera frame.")
                 # If loading a video, use 'break' instead of 'continue'.
                 continue
 
-            
             # To improve performance, optionally mark the image as not writeable to
             # pass by reference.
             image.flags.writeable = False
@@ -109,7 +97,6 @@ def video_processing():
             # Draw the hand annotations on the image.
             image.flags.writeable = True
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
 
             # key logic for adding an action
             point = None
@@ -133,11 +120,8 @@ def video_processing():
 
                 id = pose_db.match(pose)
 
-
                 inference_id = inference(pre_processed_landmark_list)
-
                 #print("inference_id  -----------   ", inference_id)
-
                 # print(id, inference_id)
                 text = f"{id}, {inference_id}"
 
@@ -171,7 +155,6 @@ def video_processing():
                 detector.update_state(point, image_width, image_height)
                 temp = detector.get_state()
 
-
                 # temp is a tuple
                 three, four = temp
 
@@ -180,7 +163,6 @@ def video_processing():
                 width = 10
 
                 text = f"{str(id).ljust(width)} {str(inference_id).ljust(width)} {str(three).ljust(width)} {str(four).ljust(width)}"
-
 
                 for hand_landmarks in results.multi_hand_landmarks:
                     mp_drawing.draw_landmarks(
@@ -191,11 +173,10 @@ def video_processing():
                         mp_drawing_styles.get_default_hand_connections_style())
             # Flip the image horizontally for a selfie-view display.
             image = cv2.flip(image, 1)
-            
             image = cv2.putText(image, text, [50, 50], cv2.FONT_HERSHEY_SIMPLEX,
                                 1, color=(255, 0, 0), thickness=3)
             
-            # Let's say you want to reduce the size by half
+            # Reduce the size by half
             scale_factor = 0.5
 
             # Calculate the new dimensions
@@ -245,7 +226,7 @@ def message_interpreter(message):
     response = interpreter.chat(message)
     return response
 
-
+#get frames from video processing 
 def gen_frames():  
     global latest_frame
     while True:
@@ -255,8 +236,6 @@ def gen_frames():
                 frame_bytes = buffer.tobytes()
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-
-                
 
 @app.route('/video_feed')
 def video_feed():
