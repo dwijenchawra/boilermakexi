@@ -1,0 +1,4 @@
+Track and describe the hand as it moves from frame to frame within the video.
+Only Describe the hand, do not describe the man or the purpose of the hand.
+
+Make sure to take your time in your answers.

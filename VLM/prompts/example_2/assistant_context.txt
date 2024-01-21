@@ -1,0 +1,9 @@
+Motion Descirption:
+- The hand appears then moves in a horizontal fashion left and right.
+- This motion is done quickly and repeats for 4-5 times before the hand disappears
+
+Hand Description:
+- The use shows the front of the hand followed by the back of the hand and repeats this process again
+
+Summary:
+- This is most similar to a swiping gesture from the left to the right and back

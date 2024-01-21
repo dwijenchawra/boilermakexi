@@ -1,0 +1,11 @@
+Motion Descirption:
+- The hand appears from the bottom of the screen
+- Then the hand moves up and down, starting at the bottom, quickly moving up, and slowy moving down
+- Finally the hand disappears off the botton of the screen
+
+Hand Description:
+- After appearing, the index finger shows when the hand is moving upward
+- The index finger is hidden when the hand is moving downward
+
+Summary:
+- This is most similar to a scrolling gesture as the hand moves up and down with the index finger appearing and disappearing.

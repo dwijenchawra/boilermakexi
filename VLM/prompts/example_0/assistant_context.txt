@@ -1,0 +1,11 @@
+Motion Description:
+- The hand appears from the bottom of the screen
+- Then the hand moves upward and stops centered in the screen
+- The Hand then moves downward and exist the screen
+
+Hand Description:
+- The hand shows an "ok" sign, then the hand disappears
+- The hand doesn't take any other forms
+
+Summary:
+- This is most similar to an ok sign. 
