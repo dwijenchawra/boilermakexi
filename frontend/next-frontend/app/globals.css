@@ -42,6 +42,16 @@ body {
     url("./noise.svg");
 }
 
+.darker-noise {
+  background: linear-gradient(
+      to left,
+      rgba(10, 10, 10, 0.66),
+      85%,
+      rgba(10, 10, 10, 0.66)
+    ),
+    url("./noise.svg");
+}
+
 .draggable {
   -webkit-app-region: drag;
 }
