@@ -1,5 +1,5 @@
 from threading import Thread, Event
-from flask import Flask, Response
+from flask import Flask, Response, request
 import cv2
 import mediapipe as mp
 from Hand_Tracking.Pose_storage.Pose_DB import *
@@ -11,10 +11,11 @@ from Hand_Tracking.Debouncer.debounce import debounce
 from flask_cors import CORS, cross_origin
 import subprocess
 import os
-from audio_recorder import AudioRecorder as ar
+from audio_recorder import AudioRecorder
 import time
-from transcription_service import TranscriptionService as ts
+from transcription_service import TranscriptionService
 import re
+from interpreter import interpreter
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -24,16 +25,55 @@ latest_frame = None
 #webcam
 cap = cv2.VideoCapture(0)
 #thread control
-stop_wave = Event()
-stop_alright_wave = Event()
+stop_wave_event = Event()
+stop_alright_wave_event = Event()
+training_event = Event()
+
+command_text= ""
+alright_wave_string = ""
+from threading import Thread, Event
+from flask import Flask, Response, request
+import cv2
+import mediapipe as mp
+from Hand_Tracking.Pose_storage.Pose_DB import *
+from google.protobuf.json_format import MessageToDict
+from Hand_Tracking.Pose_Detection_Model.inference import *
+from Hand_Tracking.Pose_Detection_Model.train import *
+from Hand_Tracking.Gesture_Detection.Detector import *
+from Hand_Tracking.Debouncer.debounce import debounce
+from flask_cors import CORS, cross_origin
+import subprocess
+import os
+from audio_recorder import AudioRecorder
+import time
+from transcription_service import TranscriptionService
+import re
+from interpreter import interpreter
+
+app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+#video processing
+latest_frame = None
+#webcam
+cap = cv2.VideoCapture(0)
+#thread control
+stop_wave_event = Event()
+stop_alright_wave_event = Event()
+training_event = Event()
+
+command_text= ""
+alright_wave_string = ""
 
 app = Flask(__name__)
 
 @app.route("/")
 def hello_world():
     print("hello world endpoint is running")
+    print("hello world endpoint is running")
     return "<p>Hello, World!</p>"
 
+#load gesture-action pair from cloud or local
 #load gesture-action pair from cloud or local
 @app.route("/load_pairs")
 def load_pairs(pairs):
@@ -42,6 +82,7 @@ def load_pairs(pairs):
 
     return pairs
 
+#upload gesture-action pair to cloud and local
 #upload gesture-action pair to cloud and local
 @app.route("/save_pairs")
 def save_pairs(pairs):
@@ -83,8 +124,10 @@ def execute_script(script_path):
 
 #hand_tracking stuff
 def video_processing():
-    global stop_wave
+    global stop_wave_event
     global latest_frame
+    global training_event
+
     config = load_config()
     inference = MLP_Inference(threads=config["threads"])
     # double load because might reset output
@@ -120,7 +163,7 @@ def video_processing():
             model_complexity=0,
             min_detection_confidence=0.5,
             min_tracking_confidence=0.5) as hands:
-        while cap.isOpened() and not stop_wave.is_set():
+        while cap.isOpened() and not stop_wave_event.is_set():
 
             success, image = cap.read()
             if not success:
@@ -164,8 +207,7 @@ def video_processing():
                 # print(id, inference_id)
                 text = f"{id}, {inference_id}"
 
-                key = cv2.waitKey(5) & 0xFF
-                if key == ord("a"):
+                if training_event.is_set():
                     if id == 'n/a':
                         # succeed in being different enough
                         # need to appent datapoints to a tmp dataset
@@ -189,6 +231,8 @@ def video_processing():
                     train()
 
                     inference = MLP_Inference(threads=config["inference_threads"])
+                    training_event.clear()
+                    #query frontend that training has ended
 
                 image_width, image_height = image.shape[1], image.shape[0]
                 detector.update_state(point, image_width, image_height)
@@ -229,103 +273,124 @@ def video_processing():
             '''
             latest_frame = image
 
-
-@app.route("/start_wave")
-@cross_origin()
-def start_wave():
-    global stop_wave
-    stop_wave.clear()
+def start_wave_internal():
+    global stop_wave_event
+    stop_wave_event.clear()
     thread = Thread(target=video_processing)
     thread.start()
     return "Video processing started"
 
-@app.route("/stop_wave")
-def stop_wave():
-    global stop_wave
-    stop_wave.set()  # Signal the thread to stop
+@app.route("/start_wave")
+@cross_origin()
+@cross_origin()
+def start_wave():
+    with app.app_context():
+        return start_wave_internal()
+
+def stop_wave_internal():
+    global stop_wave_event
+    stop_wave_event.set()  # Signal the thread to stop
+    return "Video processing stopped"
+    with app.app_context():
+        return start_wave_internal()
+
+def stop_wave_internal():
+    global stop_wave_event
+    stop_wave_event.set()  # Signal the thread to stop
     return "Video processing stopped"
 
-def append_and_trim_file(file_path, text, max_lines=50, remove_lines=20):
-    # Read the existing content of the file
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
+@app.route("/stop_wave")
+@cross_origin()
+@cross_origin()
+def stop_wave():
+    with app.app_context():
+        return stop_wave_internal()
 
-    # Check if the line count exceeds the maximum allowed
-    if len(lines) >= max_lines:
-        # Remove the first 'remove_lines' lines
-        lines = lines[remove_lines:]
 
-    # Append the new text
-    lines.append(text + "\n")
-
-    # Write the modified content back to the file
-    with open(file_path, 'w') as file:
-        file.writelines(lines)
-
-def check_for_phrase(file_path, phrase):
+def check_for_phrase(string, *args):
+    global alright_wave_string
+    # Get the phrase to check for  
     # Read the file content
-    with open(file_path, 'r') as file:
-        text = file.read()
-
-    # Remove punctuation and extra spaces, and convert to lower case
-    cleaned_text = re.sub(r'[^\w\s]', '', text).lower()
-    
+    cleaned_text = re.sub(r'[^\w\s]', '', string).lower()
     # Check if the phrase appears in the text
-    return phrase in cleaned_text
+    for (i, phrase) in enumerate(args):
+        if phrase in cleaned_text:
+            alright_wave_string = ""
+            return True
 
 def alright_wave():
-    global stop_alright_wave
-    while not stop_alright_wave.is_set():
+    ar = AudioRecorder()
+    ts = TranscriptionService()
+    global command_text
+    global stop_alright_wave_event
+    global alright_wave_string
+    while not stop_alright_wave_event.is_set():
         # Record and transcribe
         ar.start_recording()
-        time.sleep(5)
+        time.sleep(2.5)
         ar.stop_recording()
         ar._save_recording()
         text = ts.transcribe_audio("recording.wav")
-        append_and_trim_file('alrightwave.txt', text)
-
+        alright_wave_string = f"{alright_wave_string} {text}"
         # Check for wake phrase
-        if check_for_phrase('alrightwave.txt', 'alright wave'):
+        if check_for_phrase(alright_wave_string, 'alright wave', 'all right wave', 'all rightwave', 'alrightwave'):
             print("Wake phrase detected. Listening for command...")
 
             # Record a command after wake phrase is detected
             ar.start_recording()
             #super jank way to do this (only 5 second commands at most allowed)
-            time.sleep(5)
+            time.sleep(4)
             ar.stop_recording()
             ar._save_recording()
             command_text = ts.transcribe_audio("recording.wav")
 
             # Process the command
-            process_command(command_text)
+            process_command()
 
-def process_command(command_text):
-    if command_text == "start wave":
-        start_wave()
-    elif command_text == "stop wave":
-        stop_wave()
-    elif command_text == "train gesture":
-        train_gesture()    
-    
+def process_command():
+    if check_for_phrase(command_text, 'start wave'):
+        print("start wave")
+        with app.app_context():
+            start_wave_internal()
+    elif check_for_phrase(command_text, 'stop wave'):
+        print("stop wave")
+        with app.app_context():
+            stop_wave_internal()
+    elif check_for_phrase(command_text, 'train gesture'):
+        print("train gesture")
+        with app.app_context():
+            train_gesture()    
 
 @app.route("/start_alright_wave")
 def start_alright_wave():
-    global stop_alright_wave
-    stop_alright_wave.clear()
+    global stop_alright_wave_event
+    stop_alright_wave_event.clear()
     thread = Thread(target=alright_wave)
     thread.start()
     return "Alright Wave started"
 
 @app.route("/stop_alright_wave")
 def stop_alright_wave():
-    global stop_alright_wave
-    stop_alright_wave.set()
+    global stop_alright_wave_event
+    stop_alright_wave_event.set()
     return "Alright Wave stopped"
+    with app.app_context():
+        return stop_wave_internal()
 
 @app.route("/train_gesture")
-def train_gesture(gesture):
+def train_gesture():
+    time.sleep(3)
+    global training_event
+    training_event.set()
+    return "Gesture training started"
 
-    return "successful"
+@app.route("/create_action")
+def create_action():
+    instructions = request.form['instructions']
+    interpreter.auto_run = True
+    response = interpreter.chat(instructions)
+    return response
+
 
 '''
 @app.route("/delete_gesture")
@@ -360,5 +425,6 @@ def gen_frames():
 def video_feed():
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-if __name__ == "__main__":
-    app.run(port=8000, debug=True)
+
+if __name__ == '__main__':
+    app.run(port = 8000, debug=True)
