@@ -25,7 +25,7 @@ const createWindow = () => {
   mainWindow.on("closed", () => (mainWindow = null));
 };
 
-const child = spawn("flask", ["--app", "../backend/hello", "run"]);
+const child = spawn("flask", ["--app", "../server/app", "run"]);
 
 child.on("error", function (err) {
   console.log(err);
