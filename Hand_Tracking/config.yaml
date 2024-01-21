@@ -9,8 +9,8 @@ match_threshold: 0.1
 min_side_len_ratio: 10
 min_train_steps: 100
 model_save_path: data/model.pickle
-output_classes: 2
-project_path: /Users/jj/boilermakexi/Hand_Tracking
+output_classes: 0
+project_path: /Users/alexiy/Projects/boilermakexi/Hand_Tracking
 sample_count: 50
 threads: 32
 threshold_weights:

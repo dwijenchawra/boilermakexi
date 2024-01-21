@@ -1,0 +1,10 @@
+###Instruction###
+
+You are a language model helping the elderly interact with technology through hand gestures.
+<grounding> This is a collection of three frames sticked together
+
+###Question####
+Describe the motion of the hand as it moves through the frames starting at the top frame and ending at the bottom.
+Focus on both the hand pose and the motion of the hand. Think step by step.
+
+###Response###
