@@ -11,17 +11,14 @@ config = load_config()
 
 dataset = os.path.join(config["project_path"], config["dataset_path"])
 model_save_path = config["model_save_path"]
-output_classes = config["output_classes"]
 
 
-def train():
-    global config
-    config = load_config()
-    x = np.loadtxt(dataset, delimiter=',', dtype='float32', usecols=list(range(1, (21 * 2) + 1)))
+def train(output_classes):
+    x = np.loadtxt(dataset, delimiter=',', dtype='float32', usecols=list(range(1, (21 * 2) + 1)), skiprows=1)
 
-    y = np.loadtxt(dataset, delimiter=',', dtype='long', usecols=(0))
+    y = np.loadtxt(dataset, delimiter=',', dtype='long', usecols=(0), skiprows=1)
     if len(x) == 0:
-        return load_MLP()
+        return load_MLP(output_classes)
     print(x.shape)
     print(y.shape)
 
@@ -31,7 +28,7 @@ def train():
 
     print(next(enumerate(train_loader)))
 
-    model = load_MLP()
+    model = load_MLP(output_classes)
     print(model)
 
     loss_fn = nn.CrossEntropyLoss()
@@ -73,4 +70,4 @@ def train():
 
 
 if __name__ == "__main__":
-    train()
+    train(config["output_classes"])

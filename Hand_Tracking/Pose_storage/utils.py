@@ -2,8 +2,18 @@ import yaml
 import os
 import csv
 import json
+import pandas as pd
 
 current_name = os.path.dirname(os.path.abspath(__file__))
+
+
+def remove_id_from_csv(csv_path, id):
+    path = os.path.join(config["project_path"], csv_path)
+    df = pd.read_csv(f'{path}',header=None)
+    df = df[df[0] != id]
+    df.reset_index(drop=True, inplace=True)
+    df.loc[df[0] > id] -= 1
+    df.to_csv(path, index=False)
 
 
 def load_config():

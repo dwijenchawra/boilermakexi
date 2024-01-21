@@ -1,17 +1,18 @@
 add_threshold: 0.03
 break_early: 0.03
-dataset_path: data/blank.csv
-db_path: data/new_db.json
+dataset_path: Hand_Tracking/data/blank.csv
+db_path: Hand_Tracking/data/new_db.json
 epochs: 500
 inference_threads: 32
 linear_bound: 2.5
 match_threshold: 0.1
 min_side_len_ratio: 10
 min_train_steps: 100
-model_save_path: data/model.pickle
-output_classes: 3
+model_save_path: Hand_Tracking/data/model.pickle
+output_classes: 0
 project_path: /Users/alexiy/Projects/boilermakexi
-sample_count: 50
+remove_id: 0
+sample_count: 10
 threads: 32
 threshold_weights:
 - 0.5

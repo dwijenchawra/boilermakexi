@@ -64,7 +64,7 @@ def calc_landmark_list(image, landmarks):
 
 
 class MLP_Inference(object):
-    def __init__(self, threads=1, output_classes=config["output_classes"]):
+    def __init__(self, threads=1):
         path = os.path.join(config["project_path"],config["model_save_path"])
         if os.path.exists(path):
             self.model = torch.load(path)

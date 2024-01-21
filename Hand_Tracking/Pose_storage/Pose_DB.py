@@ -2,6 +2,7 @@ from Hand_Tracking.Pose_storage.utils import *
 from Hand_Tracking.Pose_storage.Static_pose import *
 
 config = load_config()
+from Hand_Tracking.Pose_Detection_Model.train import train
 
 
 def load_pose_from_json(path: config["db_path"]):
@@ -29,6 +30,29 @@ class Pose_DB:
             return True
         else:
             return False
+
+    def remove_static_pose(self, id, output_classes):
+        config = load_config()
+
+        str_id = f"pose_{id}"
+        i = 0
+        while i < len(self.poses):
+            pose = self.poses[i]
+            if str_id in pose.id:
+                self.poses.remove(pose)
+                # now need to remove the pose from the dataset
+                remove_id_from_csv(csv_path=config["dataset_path"], id=id)
+                print("subtractint")
+                output_classes -= 1
+                break
+            i += 1
+        while i < len(self.poses):
+            pose = self.poses[i]
+            pose.id = f"pose_{i}"
+            i += 1
+
+        self.save_pose_to_json()
+        return output_classes
 
     def match(self, pose, min_rmse=config["match_threshold"]):
         min_id = 'n/a'

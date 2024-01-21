@@ -5,6 +5,7 @@ from google.protobuf.json_format import MessageToDict
 from Hand_Tracking.Pose_Detection_Model.inference import *
 from Hand_Tracking.Pose_Detection_Model.train import *
 from Hand_Tracking.Gesture_Detection.Detector import *
+import time
 
 config = load_config()
 inference = MLP_Inference(threads=config["threads"])
@@ -18,6 +19,8 @@ mp_hands = mp.solutions.hands
 pose_db = Pose_DB(config["db_path"])
 detector = Detector(time_delta=config["time_delta"])
 
+output_classes = config["output_classes"]
+
 
 def get_keypoints_from_hand(hand):
     keypoint_pos = []
@@ -27,6 +30,7 @@ def get_keypoints_from_hand(hand):
     return keypoint_pos
 
 
+record_data = False
 tmp_dataset = []
 
 
@@ -41,6 +45,7 @@ def show_hand(hand, image):
 
 # For webcam input:
 cap = cv2.VideoCapture(0)
+
 with mp_hands.Hands(
         model_complexity=0,
         min_detection_confidence=0.5,
@@ -63,6 +68,13 @@ with mp_hands.Hands(
         # key logic for adding an action
         point = None
         text = "no hands detected!"
+        key = cv2.waitKey(5) & 0xFF
+        if key == ord("r"):
+            output_classes = pose_db.remove_static_pose(config["remove_id"], output_classes)
+
+            train(output_classes)
+            time.sleep(1)
+            inference = MLP_Inference(threads=config["threads"])
         if results.multi_hand_landmarks:
             hand = MessageToDict(results.multi_hand_landmarks[-1])
 
@@ -85,8 +97,10 @@ with mp_hands.Hands(
             # print(id, inference_id)
             text = f"{id}, {inference_id}"
 
-            key = cv2.waitKey(5) & 0xFF
             if key == ord("a"):
+                record_data = True
+
+            if record_data:
                 if id == 'n/a':
                     # succeed in being different enough
                     # need to appent datapoints to a tmp dataset
@@ -97,7 +111,9 @@ with mp_hands.Hands(
                 if len(tmp_dataset) != 0 and len(tmp_dataset) < config["sample_count"]:
                     print("error, not enough dataset has been generated, please regenerat a new one")
                     tmp_dataset = []
+                record_data = False
 
+            print(config["output_classes"])
             # check if enough of dataset is created:
             if len(tmp_dataset) > config["sample_count"]:
                 # can extend the csv file and retain the model
@@ -105,10 +121,12 @@ with mp_hands.Hands(
                 add_to_csv(tmp_dataset, config["dataset_path"])
                 tmp_dataset = []
                 # now need to train
-                config["output_classes"] += 1
+                output_classes += 1
                 update_config(config)
-                train()
-
+                time.sleep(1)
+                train(output_classes)
+                record_data = False
+                time.sleep(1)
                 inference = MLP_Inference(threads=config["inference_threads"])
             image_width, image_height = image.shape[1], image.shape[0]
             detector.update_state(point, image_width, image_height)
