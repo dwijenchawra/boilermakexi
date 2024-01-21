@@ -1,0 +1,15 @@
+{
+  "devDependencies": {
+    "electron": "^28.1.4",
+    "electron-builder": "^24.9.1",
+    "electron-is-dev": "^3.0.1"
+  },
+  "name": "boilermakexi",
+  "version": "1.0.0",
+  "description": "submission to boilermakexi",
+  "scripts": {
+    "start": "electron ."
+  },
+  "main": "main.js",
+  "type": "module"
+}
