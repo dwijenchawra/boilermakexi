@@ -31,14 +31,49 @@ training_event = Event()
 
 command_text= ""
 alright_wave_string = ""
+from threading import Thread, Event
+from flask import Flask, Response, request
+import cv2
+import mediapipe as mp
+from Hand_Tracking.Pose_storage.Pose_DB import *
+from google.protobuf.json_format import MessageToDict
+from Hand_Tracking.Pose_Detection_Model.inference import *
+from Hand_Tracking.Pose_Detection_Model.train import *
+from Hand_Tracking.Gesture_Detection.Detector import *
+from Hand_Tracking.Debouncer.debounce import debounce
+from flask_cors import CORS, cross_origin
+import subprocess
+import os
+from audio_recorder import AudioRecorder
+import time
+from transcription_service import TranscriptionService
+import re
+from interpreter import interpreter
+
+app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+#video processing
+latest_frame = None
+#webcam
+cap = cv2.VideoCapture(0)
+#thread control
+stop_wave_event = Event()
+stop_alright_wave_event = Event()
+training_event = Event()
+
+command_text= ""
+alright_wave_string = ""
 
 app = Flask(__name__)
 
 @app.route("/")
 def hello_world():
     print("hello world endpoint is running")
+    print("hello world endpoint is running")
     return "<p>Hello, World!</p>"
 
+#load gesture-action pair from cloud or local
 #load gesture-action pair from cloud or local
 @app.route("/load_pairs")
 def load_pairs(pairs):
@@ -47,6 +82,7 @@ def load_pairs(pairs):
 
     return pairs
 
+#upload gesture-action pair to cloud and local
 #upload gesture-action pair to cloud and local
 @app.route("/save_pairs")
 def save_pairs(pairs):
@@ -246,7 +282,15 @@ def start_wave_internal():
 
 @app.route("/start_wave")
 @cross_origin()
+@cross_origin()
 def start_wave():
+    with app.app_context():
+        return start_wave_internal()
+
+def stop_wave_internal():
+    global stop_wave_event
+    stop_wave_event.set()  # Signal the thread to stop
+    return "Video processing stopped"
     with app.app_context():
         return start_wave_internal()
 
@@ -256,6 +300,7 @@ def stop_wave_internal():
     return "Video processing stopped"
 
 @app.route("/stop_wave")
+@cross_origin()
 @cross_origin()
 def stop_wave():
     with app.app_context():
@@ -316,7 +361,6 @@ def process_command():
         with app.app_context():
             train_gesture()    
 
-
 @app.route("/start_alright_wave")
 def start_alright_wave():
     global stop_alright_wave_event
@@ -330,6 +374,8 @@ def stop_alright_wave():
     global stop_alright_wave_event
     stop_alright_wave_event.set()
     return "Alright Wave stopped"
+    with app.app_context():
+        return stop_wave_internal()
 
 @app.route("/train_gesture")
 def train_gesture():
@@ -344,6 +390,7 @@ def create_action():
     interpreter.auto_run = True
     response = interpreter.chat(instructions)
     return response
+
 
 '''
 @app.route("/delete_gesture")
@@ -378,5 +425,6 @@ def gen_frames():
 def video_feed():
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-if __name__ == "__main__":
-    app.run(port=8000, debug=True)
+
+if __name__ == '__main__':
+    app.run(port = 8000, debug=True)
