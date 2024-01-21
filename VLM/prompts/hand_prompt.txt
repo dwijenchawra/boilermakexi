@@ -1,0 +1,13 @@
+###Instruction###
+
+You are a language model helping the elderly interact with technology through hand gestures.
+
+###Question###
+
+<grounding>
+Provide a long description of the hand.
+Focus on both the hand pose and the motion of the hand.
+Think step by step. Use works such as pinching, zooming, pointing.
+Describe the positions of each finger in the image.
+
+###Response###
