@@ -1,4 +1,4 @@
-from threading import Thread
+from threading import Thread, Event
 from flask import Flask, Response
 import cv2
 import mediapipe as mp
@@ -37,11 +37,20 @@ def save_pairs(pairs):
 
     return pairs
 
+#video processing
 latest_frame = None
+#webcam
 cap = cv2.VideoCapture(0)
 
+#thread control
+stop_event = Event()
+
+
 def video_processing():
+    global stop_event
     global latest_frame
+
+    
     # Add the video processing code here
     config = load_config()
     inference = MLP_Inference(threads=config["threads"])
@@ -82,7 +91,7 @@ def video_processing():
             model_complexity=0,
             min_detection_confidence=0.5,
             min_tracking_confidence=0.5) as hands:
-        while cap.isOpened():
+        while cap.isOpened() and not stop_event.is_set():
 
             
             success, image = cap.read()
@@ -196,34 +205,24 @@ def video_processing():
 
             # Resize the frame
             image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
-            
+
             latest_frame = image
     pass
 
 @app.route("/start_wave")
 @cross_origin()
 def start_wave():
-    # Start video processing in a background thread
+    global stop_event
+    stop_event.clear()
     thread = Thread(target=video_processing)
     thread.start()
     return "Video processing started"
 
-    
-def _running_wave():
-    # run media_pipe.py
-    # while is_running:
-        # match debounced output to user gesture sequences
-        # if match
-            # run mapped action
-    
-    return
-
 @app.route("/stop_wave")
 def stop_wave():
-    # is_running = False
-    # thread.join()
-    # return success
-    return
+    global stop_event
+    stop_event.set()  # Signal the thread to stop
+    return "Video processing stopped"
 
 @app.route("/train_gesture")
 def train_gesture(gesture):
