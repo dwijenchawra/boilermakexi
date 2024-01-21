@@ -35,7 +35,7 @@ def start_wave():
     # is_running = True
     # thread = _detect_wave()
     # success = start thread
-    # return success 
+    # return success
     
 def _running_wave():
     # run media_pipe.py
@@ -43,6 +43,7 @@ def _running_wave():
         # match debounced output to user gesture sequences
         # if match
             # run mapped action
+    return
 
 @app.route("/stop_wave")
 def stop_wave():
@@ -97,7 +98,7 @@ class Wave:
     def __init__(self):
         # self.is_running = False
         # self.thread = None
-
+        return
 
 
 if __name__ == '__main__':
