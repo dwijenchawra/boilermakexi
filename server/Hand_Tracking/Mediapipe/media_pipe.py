@@ -10,6 +10,14 @@ from Hand_Tracking.Pose_Detection_Model.train import *
 from Hand_Tracking.Gesture_Detection.Detector import *
 from Hand_Tracking.Debouncer.debounce import debounce
 
+# get the directory 4 levels up (project root)
+project_root = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(project_root)
+hand_tracking_root = project_root
+project_root = os.path.dirname(project_root)
+project_root = os.path.dirname(project_root)
+
+
 config = load_config()
 inference = MLP_Inference(threads=config["threads"])
 # double load because might reset output
@@ -152,6 +160,10 @@ def pre_process_gest_seq(gest_seq_path):
     
     gesture_sequences: Specifies sequences of gestures, each with a sequence name (seq_name), a sequence of poses and directions (seq), and an associated action (action). In the example provided, there is a "swipe" sequence with specific poses and directions triggering the action "switch_tabs".
     '''
+
+    # join project root with path
+    gest_seq_path = os.path.join(project_root, gest_seq_path)
+
     with open(gest_seq_path, "r") as f:
         raw_gest_seq_file = json.load(f)
 
